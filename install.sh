@@ -31,7 +31,7 @@ chmod +x "$BASE_DIR/agentic-lab/install-system-deps.sh"
 yes | sudo "$BASE_DIR/agentic-lab/install-system-deps.sh"
 
 echo "Installing RPMs..."
-sudo dnf install -y "$BASE_DIR"/*.rpm
+sudo dnf install -y "$BASE_DIR/IBM-Bob-linux-x64-1.109.5+bob1.0.2.rpm"
 
 echo "✅ Files preserved at: $TMP_DIR"
 echo "✅ Installation complete!"
