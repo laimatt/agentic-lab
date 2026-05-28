@@ -32,7 +32,7 @@ fi
 
 echo "Running system dependencies script..."
 chmod +x "$BASE_DIR/agentic-lab/install-system-deps.sh"
-sudo "$BASE_DIR/agentic-lab/install-system-deps.sh"
+sudo -y "$BASE_DIR/agentic-lab/install-system-deps.sh"
 
 echo "Installing RPMs..."
 sudo dnf install -y "$BASE_DIR"/*.rpm
@@ -41,3 +41,5 @@ echo "Cleaning up..."
 rm -rf "$TMP_DIR"
 
 echo "✅ Installation complete!"
+
+bobide
