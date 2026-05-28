@@ -23,7 +23,7 @@ curl -fL "$URL" -o "$TMP_DIR/package.zip"
 echo "Extracting..."
 unzip -o "$TMP_DIR/package.zip" -d "$TMP_DIR"
 
-BASE_DIR="$TMP_DIR/agentic-lab-mlai-with-rpm"
+BASE_DIR="$TMP_DIR/agentic-lab-mlai"
 
 if [ ! -d "$BASE_DIR" ]; then
   echo "Unexpected archive structure"
@@ -31,8 +31,8 @@ if [ ! -d "$BASE_DIR" ]; then
 fi
 
 echo "Running system dependencies script..."
-chmod +x "$BASE_DIR/agentic-lab-mlai/install-system-deps.sh"
-sudo "$BASE_DIR/agentic-lab-mlai/install-system-deps.sh"
+chmod +x "$BASE_DIR/agentic-lab/install-system-deps.sh"
+sudo "$BASE_DIR/agentic-lab/install-system-deps.sh"
 
 echo "Installing RPMs..."
 sudo dnf install -y "$BASE_DIR"/*.rpm
