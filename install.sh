@@ -15,10 +15,17 @@ fi
 #   sudo dnf install -y unzip
 # fi
 
-
+# download lab contents
+echo "Downloading $LAB_NAME..."
 git clone --depth 1 --filter=blob:none --sparse https://github.com/laimatt/agentic-lab.git
 cd agentic-lab
 git sparse-checkout set agentic-lab
+
+# Move contents up one level
+shopt -s dotglob
+mv agentic-lab/* .
+rm -rf agentic-lab
+rm -rf install.sh
 
 echo "Running system dependencies script..."
 chmod +x "$HOME/$LAB_NAME/install-system-deps.sh"
