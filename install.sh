@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-LAB_NAME = "agentic-lab"
+LAB_NAME="agentic-lab"
 # Use home directory instead of temp
 
 echo "Working in $HOME"
