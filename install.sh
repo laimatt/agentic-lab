@@ -2,12 +2,10 @@
 set -e
 
 URL="https://github.com/laimatt/agentic-lab/releases/download/v1.0/agentic-lab-mlai-with-rpm.zip"
-
+LAB_NAME = "agentic-lab"
 # Use home directory instead of temp
-TMP_DIR="$HOME"
-mkdir -p "$TMP_DIR"
 
-echo "Working in $TMP_DIR"
+echo "Working in $HOME"
 
 # Ensure dependencies exist
 if ! command -v curl >/dev/null 2>&1; then
@@ -19,22 +17,50 @@ if ! command -v unzip >/dev/null 2>&1; then
 fi
 
 echo "Downloading package..."
-curl -fL "$URL" -o "$TMP_DIR/package.zip"
+curl -fL "$URL" -o "$HOME/package.zip"
 
 echo "Extracting..."
-unzip -o "$TMP_DIR/package.zip" -d "$TMP_DIR"
+unzip -o "$HOME/package.zip" -d "$HOME"
 
-BASE_DIR="$TMP_DIR/agentic-lab-mlai"
 
 echo "Running system dependencies script..."
-chmod +x "$BASE_DIR/agentic-lab/install-system-deps.sh"
-yes | sudo "$BASE_DIR/agentic-lab/install-system-deps.sh"
+chmod +x "$HOME/$LAB_NAME/install-system-deps.sh"
+yes | sudo "$HOME/$LAB_NAME/install-system-deps.sh"
 
-echo "Installing RPMs..."
-sudo rpm -ivh "$BASE_DIR"/*.rpm || \
-sudo dnf install -y "$BASE_DIR"/*.rpm
+# Check if bobide command already exists
+if command -v bobide >/dev/null 2>&1; then
+  echo "bobide command already exists, skipping RPM installation..."
+else
+  echo "Installing RPMs..."
+  sudo rpm -ivh "$HOME"/*.rpm || \
+  sudo dnf install -y "$HOME"/*.rpm
+fi
 
-echo "✅ Files preserved at: $TMP_DIR"
-echo "✅ Installation complete!"
+echo "â Files preserved at: $HOME"
+
+# Create 20 users with password "pass"
+echo "Creating users..."
+for i in $(seq -w 1 20); do
+  USERNAME="user$i"
+  if id "$USERNAME" &>/dev/null; then
+    echo "User $USERNAME already exists, skipping..."
+  else
+    sudo useradd -m "$USERNAME"
+    echo "$USERNAME:pass" | sudo chpasswd
+    echo "Created user: $USERNAME"
+  fi
+
+  # Check if lab directory already exists in user's home
+  if [ -d "/home/$USERNAME/$LAB_NAME" ]; then
+    echo "$LAB_NAME directory already exists for $USERNAME, skipping copy..."
+  else
+    echo "Copying $LAB_NAME to $USERNAME's home directory..."
+    sudo cp -r /home/itzuser/$LAB_NAME /home/$USERNAME/
+    sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/$LAB_NAME
+  fi
+  
+done
+
+echo "â Installation complete!"
 
 bobide
