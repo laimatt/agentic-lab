@@ -13,4 +13,4 @@ google_credentials.json
 venv/
 venv
 .bob/mcp.json
-
+.DS_Store

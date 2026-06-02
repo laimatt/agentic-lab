@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-URL="https://github.com/laimatt/agentic-lab/releases/download/v1.0/agentic-lab-mlai-with-rpm.zip"
 LAB_NAME = "agentic-lab"
 # Use home directory instead of temp
 
@@ -12,16 +11,14 @@ if ! command -v curl >/dev/null 2>&1; then
   sudo dnf install -y curl
 fi
 
-if ! command -v unzip >/dev/null 2>&1; then
-  sudo dnf install -y unzip
-fi
+# if ! command -v unzip >/dev/null 2>&1; then
+#   sudo dnf install -y unzip
+# fi
 
-echo "Downloading package..."
-curl -fL "$URL" -o "$HOME/package.zip"
 
-echo "Extracting..."
-unzip -o "$HOME/package.zip" -d "$HOME"
-
+git clone --depth 1 --filter=blob:none --sparse https://github.com/laimatt/agentic-lab.git
+cd agentic-lab
+git sparse-checkout set agentic-lab
 
 echo "Running system dependencies script..."
 chmod +x "$HOME/$LAB_NAME/install-system-deps.sh"
@@ -31,12 +28,20 @@ yes | sudo "$HOME/$LAB_NAME/install-system-deps.sh"
 if command -v bobide >/dev/null 2>&1; then
   echo "bobide command already exists, skipping RPM installation..."
 else
+  URL="https://github.com/laimatt/agentic-lab/releases/download/v2.0/IBM-Bob-linux-x64-1.109.5+bob1.0.2.rpm"
+
+  cd "$HOME"
+  curl -fL -O "$URL" || {
+    echo "Failed to download package.zip"
+    exit 1
+  }
+
   echo "Installing RPMs..."
   sudo rpm -ivh "$HOME"/*.rpm || \
   sudo dnf install -y "$HOME"/*.rpm
 fi
 
-echo "â Files preserved at: $HOME"
+echo "✅ Files preserved at: $HOME"
 
 # Create 20 users with password "pass"
 echo "Creating users..."
@@ -61,6 +66,4 @@ for i in $(seq -w 1 20); do
   
 done
 
-echo "â Installation complete!"
-
-bobide
+echo "✅ Installation complete!"
