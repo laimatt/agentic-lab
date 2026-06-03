@@ -48,8 +48,6 @@ else
   sudo dnf install -y "$HOME"/*.rpm
 fi
 
-echo "✅ Files preserved at: $HOME"
-
 # Create 20 users with password "pass"
 echo "Creating users..."
 for i in $(seq -w 1 20); do
@@ -60,6 +58,7 @@ for i in $(seq -w 1 20); do
     sudo useradd -m "$USERNAME"
     echo "$USERNAME:pass" | sudo chpasswd
     echo "Created user: $USERNAME"
+
   fi
 
   # Check if lab directory already exists in user's home
@@ -69,6 +68,16 @@ for i in $(seq -w 1 20); do
     echo "Copying $LAB_NAME to $USERNAME's home directory..."
     sudo cp -r /home/itzuser/$LAB_NAME /home/$USERNAME/
     sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/$LAB_NAME
+    sudo chmod -R 755 /home/$USERNAME
+    
+    
+    cd /home/$USERNAME/$LAB_NAME || exit
+    echo "running make setup"
+    sudo -u $USERNAME -H make setup
+    echo "running make init-db"
+    sudo -u $USERNAME -H make init-db
+    
+    
   fi
   
 done
