@@ -46,6 +46,63 @@ EOF
     echo "✓ Wrapper script created at $BOBIDE_WRAPPER_PATH"
 }
 
+
+# ============================================
+# FUNCTION: Configure system-wide dconf defaults
+# ============================================
+configure_system_dconf() {
+    echo "Configuring system-wide dconf defaults..."
+    
+    # 1. Create dconf profile if it doesn't exist
+    if [ ! -f /etc/dconf/profile/user ]; then
+        sudo mkdir -p /etc/dconf/profile
+        sudo bash -c 'cat > /etc/dconf/profile/user' << 'EOF'
+user-db:user
+system-db:local
+EOF
+        echo "  ✓ Created dconf profile"
+    else
+        echo "  ✓ dconf profile already exists"
+    fi
+    
+    # 2. Create system defaults directory
+    sudo mkdir -p /etc/dconf/db/local.d
+    
+    # 3. Set default favorites for all new users
+    sudo bash -c "cat > /etc/dconf/db/local.d/01-favorites" << EOF
+# Default favorite applications for all users
+[org/gnome/shell]
+favorite-apps=$FAVORITE_APPS
+EOF
+    echo "  ✓ Configured default favorites"
+    
+    # 4. Set default power settings for all new users
+    sudo bash -c "cat > /etc/dconf/db/local.d/02-power" << EOF
+# Extend screen blank timeout (configured in script variables)
+[org/gnome/desktop/session]
+idle-delay=uint32 $SCREEN_BLANK_TIMEOUT
+EOF
+    echo "  ✓ Configured power settings (30 min screen blank)"
+    
+    # 5. Disable GNOME Initial Setup and Tour (Welcome to Red Hat popup)
+    sudo bash -c 'cat > /etc/dconf/db/local.d/03-initial-setup' << 'EOF'
+# Disable GNOME Initial Setup welcome screen
+[org/gnome/initial-setup]
+had-user-interaction=true
+
+# Disable GNOME Tour ("check out the tour" popup)
+[org/gnome/shell]
+welcome-dialog-last-shown-version='999.0'
+EOF
+    echo "  ✓ Disabled GNOME Initial Setup and Tour"
+    
+    # 6. Compile the database
+    sudo dconf update
+    echo "  ✓ dconf database compiled"
+    
+    echo "✓ System-wide dconf defaults configured"
+}
+
 # ============================================
 # FUNCTION: Configure bobide notifications
 # ============================================
@@ -204,6 +261,17 @@ EOF
     echo "  ✓ bobide configuration complete for $USERNAME"
 }
 
+
+
+
+
+
+
+
+
+# ============================================
+# Main
+# ============================================
 # Ensure dependencies exist
 if ! command -v curl >/dev/null 2>&1; then
   sudo dnf install -y curl
@@ -247,62 +315,6 @@ else
   sudo rpm -ivh "$HOME"/*.rpm || \
   sudo dnf install -y "$HOME"/*.rpm
 fi
-
-# ============================================
-# FUNCTION: Configure system-wide dconf defaults
-# ============================================
-configure_system_dconf() {
-    echo "Configuring system-wide dconf defaults..."
-    
-    # 1. Create dconf profile if it doesn't exist
-    if [ ! -f /etc/dconf/profile/user ]; then
-        sudo mkdir -p /etc/dconf/profile
-        sudo bash -c 'cat > /etc/dconf/profile/user' << 'EOF'
-user-db:user
-system-db:local
-EOF
-        echo "  ✓ Created dconf profile"
-    else
-        echo "  ✓ dconf profile already exists"
-    fi
-    
-    # 2. Create system defaults directory
-    sudo mkdir -p /etc/dconf/db/local.d
-    
-    # 3. Set default favorites for all new users
-    sudo bash -c "cat > /etc/dconf/db/local.d/01-favorites" << EOF
-# Default favorite applications for all users
-[org/gnome/shell]
-favorite-apps=$FAVORITE_APPS
-EOF
-    echo "  ✓ Configured default favorites"
-    
-    # 4. Set default power settings for all new users
-    sudo bash -c "cat > /etc/dconf/db/local.d/02-power" << EOF
-# Extend screen blank timeout (configured in script variables)
-[org/gnome/desktop/session]
-idle-delay=uint32 $SCREEN_BLANK_TIMEOUT
-EOF
-    echo "  ✓ Configured power settings (30 min screen blank)"
-    
-    # 5. Disable GNOME Initial Setup and Tour (Welcome to Red Hat popup)
-    sudo bash -c 'cat > /etc/dconf/db/local.d/03-initial-setup' << 'EOF'
-# Disable GNOME Initial Setup welcome screen
-[org/gnome/initial-setup]
-had-user-interaction=true
-
-# Disable GNOME Tour ("check out the tour" popup)
-[org/gnome/shell]
-welcome-dialog-last-shown-version='999.0'
-EOF
-    echo "  ✓ Disabled GNOME Initial Setup and Tour"
-    
-    # 6. Compile the database
-    sudo dconf update
-    echo "  ✓ dconf database compiled"
-    
-    echo "✓ System-wide dconf defaults configured"
-}
 
 # Create the wrapper script (only needs to be done once, system-wide)
 create_bobide_wrapper
