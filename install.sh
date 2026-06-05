@@ -12,9 +12,9 @@ USER_RANGE_END=3
 USER_PREFIX="user"
 BOBIDE_RPM_URL="https://github.com/laimatt/agentic-lab/releases/download/v2.0/IBM-Bob-linux-x64-1.109.5+bob1.0.2.rpm"
 BOBIDE_WRAPPER_PATH="/usr/local/bin/bobide-no-keyring"
-BOBIDE_DESKTOP_NAME="IBM Bob (demo)"
-SCREEN_BLANK_TIMEOUT=1800  # 30 minutes in seconds
-FAVORITE_APPS="['firefox.desktop', 'org.gnome.Nautilus.desktop', 'bobide-no-keyring.desktop', 'org.gnome.Terminal.desktop']"
+BOBIDE_DESKTOP_NAME="IBM Bob"
+SCREEN_BLANK_TIMEOUT=14400  # 4 hours in seconds
+FAVORITE_APPS="['firefox.desktop', 'org.gnome.Nautilus.desktop', 'bobide.desktop', 'org.gnome.Terminal.desktop']"
 
 echo "Working in $HOME"
 
@@ -82,7 +82,7 @@ EOF
 [org/gnome/desktop/session]
 idle-delay=uint32 $SCREEN_BLANK_TIMEOUT
 EOF
-    echo "  ✓ Configured power settings (30 min screen blank)"
+    echo "  ✓ Configured power settings (4 hours screen blank)"
     
     # 5. Disable GNOME Initial Setup and Tour (Welcome to Red Hat popup)
     sudo bash -c 'cat > /etc/dconf/db/local.d/03-initial-setup' << 'EOF'
@@ -215,34 +215,21 @@ EOF
     sudo -u "$USERNAME" touch "$GNOME_INITIAL_SETUP_DIR/gnome-initial-setup-done"
     echo "  ✓ Marked GNOME Initial Setup as completed"
     
-    # Create desktop launcher using the wrapper script
+    # Override system desktop file with modified version
     local DESKTOP_DIR="$USER_HOME/.local/share/applications"
-    local DESKTOP_FILE="$DESKTOP_DIR/bobide-no-keyring.desktop"
+    local DESKTOP_FILE="$DESKTOP_DIR/bobide.desktop"
     
-    echo "  → Creating desktop launcher..."
+    echo "  → Configuring desktop launcher..."
     sudo -u "$USERNAME" mkdir -p "$DESKTOP_DIR"
     
-    # Create desktop file with lab as default directory
-    sudo -u "$USERNAME" bash -c "cat > '$DESKTOP_FILE'" << EOF
-[Desktop Entry]
-Name=$BOBIDE_DESKTOP_NAME
-Comment=Code Editing. Redefined.
-GenericName=Text Editor
-Exec=$BOBIDE_WRAPPER_PATH $USER_HOME/$LAB_NAME
-Icon=bobide
-Type=Application
-StartupNotify=false
-StartupWMClass=bobide
-Categories=TextEditor;Development;IDE;
-MimeType=text/plain;inode/directory;
-Actions=new-empty-window;
-Keywords=vscode;
-
-[Desktop Action new-empty-window]
-Name=New Empty Window
-Exec=$BOBIDE_WRAPPER_PATH --new-window $USER_HOME/$LAB_NAME
-Icon=bobide
-EOF
+    # Copy system desktop file to user's directory
+    sudo -u "$USERNAME" cp /usr/share/applications/bobide.desktop "$DESKTOP_FILE"
+    
+    # Modify the Exec lines to use wrapper and open agentic-lab
+    sudo -u "$USERNAME" sed -i \
+        -e "s|Exec=/usr/share/bobide/bobide %F|Exec=$BOBIDE_WRAPPER_PATH $USER_HOME/$LAB_NAME|g" \
+        -e "s|Exec=/usr/share/bobide/bobide --new-window %F|Exec=$BOBIDE_WRAPPER_PATH --new-window $USER_HOME/$LAB_NAME|g" \
+        "$DESKTOP_FILE"
     
     # Set proper permissions for desktop file (644, not executable)
     sudo chmod 644 "$DESKTOP_FILE"
@@ -253,7 +240,7 @@ EOF
         sudo -u "$USERNAME" update-desktop-database "$DESKTOP_DIR" 2>/dev/null || true
     fi
     
-    echo "  ✓ Desktop launcher created"
+    echo "  ✓ Desktop launcher configured (overriding system default)"
     
     # NOTE: Favorites bar is configured system-wide via dconf (see configure_system_dconf function)
     # Per-user dconf attempts here won't work because user isn't logged in yet
@@ -281,25 +268,6 @@ fi
 #   sudo dnf install -y unzip
 # fi
 
-if [ -d "/home/itzuser/$LAB_NAME" ]; then
-    echo "$LAB_NAME directory already exists for itzuser, skipping download..."
-  else
-# download lab contents
-    echo "Downloading $LAB_NAME..."
-    git clone --depth 1 --filter=blob:none --sparse "$LAB_REPO"
-    cd $LAB_NAME
-    git sparse-checkout set "$LAB_NAME"
-
-    # Move contents up one level
-    shopt -s dotglob
-    mv $LAB_NAME/* .
-    rm -rf $LAB_NAME
-    rm -rf install.sh
-
-    echo "Running system dependencies script..."
-    chmod +x "$HOME/$LAB_NAME/install-system-deps.sh"
-    yes | sudo "$HOME/$LAB_NAME/install-system-deps.sh"
-fi
 
 # Check if bobide command already exists
 if command -v bobide >/dev/null 2>&1; then
@@ -322,6 +290,27 @@ create_bobide_wrapper
 # Configure system-wide dconf defaults (only needs to be done once)
 configure_system_dconf
 
+
+if [ -d "/home/itzuser/$LAB_NAME" ]; then
+    echo "$LAB_NAME directory already exists for itzuser, skipping download..."
+  else
+# download lab contents
+    echo "Downloading $LAB_NAME..."
+    git clone --depth 1 --filter=blob:none --sparse "$LAB_REPO"
+    cd $LAB_NAME
+    git sparse-checkout set "$LAB_NAME"
+
+    # Move contents up one level
+    shopt -s dotglob
+    mv $LAB_NAME/* .
+    rm -rf $LAB_NAME
+    rm -rf install.sh
+
+    echo "Running system dependencies script..."
+    chmod +x "$HOME/$LAB_NAME/install-system-deps.sh"
+    yes | sudo "$HOME/$LAB_NAME/install-system-deps.sh"
+fi
+
 # Create users with configured range
 echo "Creating users..."
 for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
@@ -342,14 +331,13 @@ for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
     echo "Copying $LAB_NAME to $USERNAME's home directory..."
     sudo cp -r /home/itzuser/$LAB_NAME /home/$USERNAME/
     sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/$LAB_NAME
-    sudo chmod -R 755 /home/$USERNAME
+    sudo chmod -R 750 /home/$USERNAME
     
     
-    cd /home/$USERNAME/$LAB_NAME || exit
-    echo "running make setup"
-    sudo -u $USERNAME -H make setup
-    echo "running make init-db"
-    sudo -u $USERNAME -H make init-db
+    # Run cd and make in the same shell as the user
+    # sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make setup"
+    # sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make init-db"
+
   fi
   
   # Configure bobide notifications for this user
