@@ -335,8 +335,8 @@ for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
     
     
     # Run cd and make in the same shell as the user
-    # sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make setup"
-    # sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make init-db"
+    sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make setup"
+    sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make init-db"
 
   fi
   
