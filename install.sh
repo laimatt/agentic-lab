@@ -334,10 +334,10 @@ for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
     sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/$LAB_NAME
     sudo chmod -R 755 /home/$USERNAME
     
-    
-    # Run cd and make in the same shell as the user
-    sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make setup"
-    sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && make init-db"
+    echo "Running user setup script..."
+    chmod +x "$HOME/$LAB_NAME/user-setup.sh"
+    sudo "$HOME/$LAB_NAME/user-setup.sh"
+
 
   fi
   
