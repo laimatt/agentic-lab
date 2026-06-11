@@ -307,9 +307,14 @@ if [ -d "/home/itzuser/$LAB_NAME" ]; then
     rm -rf $LAB_NAME
     rm -rf install.sh
 
-    echo "Running system dependencies script..."
-    chmod +x "$HOME/$LAB_NAME/install-system-deps.sh"
-    yes | sudo "$HOME/$LAB_NAME/install-system-deps.sh"
+    if [ ! -f $HOME/$LAB_NAME/install-system-deps.sh ]; then
+        echo "Running system dependencies script..."
+        chmod +x "$HOME/$LAB_NAME/install-system-deps.sh"
+        yes | sudo "$HOME/$LAB_NAME/install-system-deps.sh"
+    else
+        echo "No system dependencies script found, skipping..."
+    fi
+
 fi
 
 # Create users with configured range
@@ -334,9 +339,14 @@ for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
     sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/$LAB_NAME
     sudo chmod -R 755 /home/$USERNAME
     
-    echo "Running user setup script..."
-    chmod +x "$HOME/$LAB_NAME/user-setup.sh"
-    sudo "$HOME/$LAB_NAME/user-setup.sh"
+
+    if [ ! -f $HOME/$LAB_NAME/user-setup.sh ]; then
+        echo "Running user setup script..."
+        chmod +x "$HOME/$LAB_NAME/user-setup.sh"
+        sudo "$HOME/$LAB_NAME/user-setup.sh"
+    else
+        echo "No user setup script found, skipping..."
+    fi
 
 
   fi
