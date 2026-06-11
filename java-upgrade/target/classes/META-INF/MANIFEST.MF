@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1780604256639
+Build-Jdk: 17.0.13
+Built-By: shohaib
+Bundle-ClassPath: .,okhttp-4.12.0.jar,okio-3.7.0.jar,okio-jvm-3.7.0.jar,
+ kotlin-stdlib-1.9.21.jar,annotations-13.0.jar,gson-2.9.0.jar
+Bundle-Description: Java client for the Tinify API. Tinify compresses yo
+ ur images intelligently. Read more at https://tinify.com.
+Bundle-License: http://www.opensource.org/licenses/mit-license.php
+Bundle-ManifestVersion: 2
+Bundle-Name: Tinify
+Bundle-SymbolicName: com.tinify
+Bundle-Version: 1.8.8
+Created-By: Apache Maven Bundle Plugin
+Embed-Dependency: *;scope=compile|runtime
+Embed-Transitive: true
+Embedded-Artifacts: okhttp-4.12.0.jar;g="com.squareup.okhttp3";a="okhttp
+ ";v="4.12.0",okio-3.7.0.jar;g="com.squareup.okio";a="okio";v="3.7.0",ok
+ io-jvm-3.7.0.jar;g="com.squareup.okio";a="okio-jvm";v="3.7.0",kotlin-st
+ dlib-1.9.21.jar;g="org.jetbrains.kotlin";a="kotlin-stdlib";v="1.9.21",a
+ nnotations-13.0.jar;g="org.jetbrains";a="annotations";v="13.0",gson-2.9
+ .0.jar;g="com.google.code.gson";a="gson";v="2.9.0"
+Export-Package: com.tinify;uses:="javax.net.ssl";version="1.8.8"
+Implementation-Title: Tinify
+Implementation-URL: https://tinify.com
+Implementation-Vendor-Id: com.tinify
+Implementation-Version: 1.8.8
+Import-Package: javax.crypto,javax.crypto.spec,javax.net,javax.net.ssl,j
+ avax.security.auth.x500,org.openjsse.javax.net.ssl,org.openjsse.net.ssl
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Specification-Title: Tinify
+Specification-Version: 1.8.8
+Tool: Bnd-3.5.0.201709291849
