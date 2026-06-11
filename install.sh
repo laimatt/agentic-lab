@@ -6,6 +6,7 @@ set -e
 # ============================================
 LAB_NAME="agentic-lab"
 LAB_REPO="https://github.com/laimatt/agentic-lab.git"
+LAB_BRANCH="additional-labs"
 USER_PASSWORD="pass"
 USER_RANGE_START=1
 USER_RANGE_END=3
@@ -296,7 +297,7 @@ if [ -d "/home/itzuser/$LAB_NAME" ]; then
   else
 # download lab contents
     echo "Downloading $LAB_NAME..."
-    git clone --depth 1 --filter=blob:none --sparse "$LAB_REPO"
+    git clone -b "$LAB_BRANCH" --depth 1 --filter=blob:none --sparse "$LAB_REPO" "$LAB_NAME"
     cd $LAB_NAME
     git sparse-checkout set "$LAB_NAME"
 
@@ -331,7 +332,7 @@ for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
     echo "Copying $LAB_NAME to $USERNAME's home directory..."
     sudo cp -r /home/itzuser/$LAB_NAME /home/$USERNAME/
     sudo chown -R $USERNAME:$USERNAME /home/$USERNAME/$LAB_NAME
-    sudo chmod -R 750 /home/$USERNAME
+    sudo chmod -R 755 /home/$USERNAME
     
     
     # Run cd and make in the same shell as the user
