@@ -6,7 +6,7 @@ set -e
 # ============================================
 LAB_NAME="agentic-lab"
 LAB_REPO="https://github.com/laimatt/agentic-lab.git"
-LAB_BRANCH="additional-labs"
+LAB_BRANCH="main"
 USER_PASSWORD="pass"
 USER_RANGE_START=1
 USER_RANGE_END=3
@@ -343,7 +343,7 @@ for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
     if [ -f "$HOME/$LAB_NAME/user-setup.sh" ]; then
         echo "Running user setup script..."
         chmod +x "$HOME/$LAB_NAME/user-setup.sh"
-        sudo "$HOME/$LAB_NAME/user-setup.sh"
+        sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && user-setup.sh" "$USERNAME" "$LAB_NAME"
     else
         echo "No user setup script found, skipping..."
     fi
