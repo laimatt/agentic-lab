@@ -343,7 +343,7 @@ for i in $(seq -w $USER_RANGE_START $USER_RANGE_END); do
     if [ -f "$HOME/$LAB_NAME/user-setup.sh" ]; then
         echo "Running user setup script..."
         chmod +x "$HOME/$LAB_NAME/user-setup.sh"
-        sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && user-setup.sh" "$USERNAME" "$LAB_NAME"
+        sudo -u $USERNAME bash -c "cd /home/$USERNAME/$LAB_NAME && ./user-setup.sh" "$USERNAME" "$LAB_NAME"
     else
         echo "No user setup script found, skipping..."
     fi
