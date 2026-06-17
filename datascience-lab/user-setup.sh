@@ -10,3 +10,5 @@ else
     pip install uv
 fi
 
+uv venv
+echo "virtual environment created"
