@@ -4,7 +4,7 @@ set -e
 # ============================================
 # CONFIGURATION - Edit these values as needed
 # ============================================
-LAB_NAME="agentic-lab"
+LAB_NAME="${1:-"datascience-lab}"
 LAB_REPO="https://github.com/laimatt/agentic-lab.git"
 LAB_BRANCH="main"
 USER_PASSWORD="pass"
