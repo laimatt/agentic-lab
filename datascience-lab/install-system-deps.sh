@@ -2,6 +2,26 @@
 
 set -e
 
+# Color codes for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Function to print colored messages
+print_success() {
+    echo -e "${GREEN}â $1${NC}"
+}
+
+print_error() {
+    echo -e "${RED}â $1${NC}"
+}
+
+print_info() {
+    echo -e "${YELLOW}â¹ $1${NC}"
+}
+
+
 check_command() {
     if command -v "$1" &> /dev/null; then
         return 0
@@ -26,11 +46,6 @@ check_pip_version() {
     
     local major=$(echo "$version" | cut -d. -f1)
     
-    if [ "$major" -ge "$REQUIRED_NODE_MAJOR" ]; then
-        return 0
-    else
-        return 1
-    fi
 }
 
 
